@@ -106,17 +106,25 @@ async function search(query) {
   hintEl.hidden = true;
   const token = ++searchToken;
 
-  // 1) 백과 항목 매칭 (제목/태그/요약)
+  // 1) 정리된 백과 항목 매칭 → 접힌 링크로 간단히 (누르면 펼침)
   const matchedEntries = ENTRIES.filter(e =>
     e.title.includes(q) || e.summary.includes(q) ||
     e.tags.some(t => t.includes(q) || q.includes(t))
   );
-  matchedEntries.forEach(e => entriesEl.appendChild(renderEntry(e)));
+  if (matchedEntries.length) {
+    let h = `<h3 class="res-h">📚 관련 백과 항목 ${matchedEntries.length}개 <span>눌러서 펼쳐 보기</span></h3><div class="idx-group"><ul>`;
+    matchedEntries.forEach(e => {
+      h += `<li><button class="idx-item" data-id="${e.id}">${escapeHtml(e.title)}</button></li>`;
+    });
+    h += `</ul></div>`;
+    entriesEl.innerHTML = h;
+    wireIndex(entriesEl);
+  }
 
-  // 2) 전문 검색 (검색 가능한 책만)
+  // 2) 원문(PDF) 전문 검색 — 그 단어가 나온 모든 쪽
   const searchable = BOOKS.filter(b => b.searchable);
   let hits = 0;
-  resultsEl.innerHTML = '<p class="hint">본문 검색 중…</p>';
+  resultsEl.innerHTML = '<p class="hint">원문에서 찾는 중…</p>';
   const frag = document.createDocumentFragment();
   for (const b of searchable) {
     const pages = await ensureText(b.id);
@@ -130,23 +138,20 @@ async function search(query) {
   }
   if (token !== searchToken) return;
   resultsEl.innerHTML = "";
-  if (matchedEntries.length) {
-    const h = document.createElement("p");
-    h.className = "hint"; h.style.margin = "18px 2px 0";
-    h.textContent = hits ? `본문 검색 결과 ${hits}건` : "본문 검색 결과 없음";
-    resultsEl.appendChild(h);
-  }
+  const rh = document.createElement("h3");
+  rh.className = "res-h";
+  rh.innerHTML = `📄 원문(PDF)에서 찾기 · ${hits}건 <span>양봉 자료 원문에서 '${escapeHtml(q)}'이(가) 나온 쪽</span>`;
+  resultsEl.appendChild(rh);
   if (hits) resultsEl.appendChild(frag);
-  else if (!matchedEntries.length) {
-    resultsEl.innerHTML = `<div class="empty">'${escapeHtml(q)}' 검색 결과가 없어요.<br>다른 단어로 찾아보세요.</div>`;
-  }
+  else resultsEl.insertAdjacentHTML("beforeend",
+    `<div class="empty">원문에서 '${escapeHtml(q)}'을(를) 찾지 못했어요.<br>다른 단어로 찾아보세요.</div>`);
 
   // 스캔본 안내
   const scan = BOOKS.filter(b => !b.searchable);
   if (scan.length) {
     const note = document.createElement("div");
     note.className = "scan-note";
-    note.textContent = `※ 스캔 문서 ${scan.length}권(${scan.map(b => b.title).join(", ")})은 본문 검색이 아직 안 됩니다. 원본 보기는 가능합니다.`;
+    note.textContent = `※ 스캔 문서 ${scan.length}권(${scan.map(b => b.title).join(", ")})은 원문 검색이 안 됩니다. 왼쪽 '전체 목차'에서 원본 보기는 가능합니다.`;
     resultsEl.appendChild(note);
   }
 }

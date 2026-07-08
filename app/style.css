@@ -101,6 +101,14 @@ td:first-child { white-space: nowrap; font-weight: 600; color: var(--green-ink);
 .idx-item::before { content: "🐝 "; }
 .idx-item:hover { border-color: var(--orange); background: #fff7f0; }
 
+/* 검색 결과 섹션 헤더 */
+.res-h {
+  font-size: 15px; margin: 18px 2px 8px; color: var(--green-ink); letter-spacing: .02em;
+  border-bottom: 2px solid var(--line); padding-bottom: 6px;
+}
+.res-h span { display: block; font-size: 12px; font-weight: 400; color: var(--muted); letter-spacing: 0; margin-top: 2px; }
+#entries .res-h { margin-top: 4px; }
+
 /* 목록으로 버튼 */
 .back-btn {
   background: none; border: none; cursor: pointer; color: var(--green-ink);
