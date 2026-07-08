@@ -307,4 +307,11 @@ addEventListener("resize", setHeaderH);
 
 if ("serviceWorker" in navigator) {
   navigator.serviceWorker.register("sw.js").catch(() => {});
+  // 새 서비스워커가 컨트롤을 잡으면 한 번만 새로고침 → 항상 최신 항목/데이터 반영
+  let reloaded = false;
+  navigator.serviceWorker.addEventListener("controllerchange", () => {
+    if (reloaded) return;
+    reloaded = true;
+    location.reload();
+  });
 }
