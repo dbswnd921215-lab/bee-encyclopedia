@@ -22,10 +22,68 @@ Promise.all([
   showHome();
 }).catch(() => { hintEl.textContent = "데이터를 불러오지 못했습니다."; });
 
-// 홈 화면: 백과 항목 전체 표시
+// 백과 항목 커리큘럼 분류 (스터디 진도 순)
+const CATS = [
+  ["꿀벌 이해", ["colony-society", "bee-ecology", "bee-races"]],
+  ["봉군 기초·관리", ["apiary-setup", "colony-inspection", "feeding"]],
+  ["계절 관리", ["spring-buildup", "summer-management", "autumn-winterbee", "wintering", "annual-calendar"]],
+  ["여왕벌·번식", ["queen-grafting", "swarming"]],
+  ["병해충 방제", ["mite-control", "bee-diseases", "hornet-control"]],
+  ["밀원·화분매개", ["nectar-plants", "pollination"]],
+  ["양봉 산물·안전", ["honey-harvest", "hive-products", "product-safety"]],
+];
+const entryById = (id) => ENTRIES.find(e => e.id === id);
+
+// 백과 항목 색인 HTML (분류별 클릭 목록)
+function entryIndexHtml() {
+  const seen = new Set();
+  let html = "";
+  CATS.forEach(([cat, ids]) => {
+    const items = ids.map(entryById).filter(Boolean);
+    items.forEach(e => seen.add(e.id));
+    if (!items.length) return;
+    html += `<div class="idx-group"><h4>${escapeHtml(cat)}</h4><ul>`;
+    items.forEach(e => {
+      html += `<li><button class="idx-item" data-id="${e.id}">${escapeHtml(e.title)}</button></li>`;
+    });
+    html += `</ul></div>`;
+  });
+  // 분류에 안 든 항목은 '기타'로
+  const rest = ENTRIES.filter(e => !seen.has(e.id));
+  if (rest.length) {
+    html += `<div class="idx-group"><h4>기타</h4><ul>`;
+    rest.forEach(e => { html += `<li><button class="idx-item" data-id="${e.id}">${escapeHtml(e.title)}</button></li>`; });
+    html += `</ul></div>`;
+  }
+  return html;
+}
+function wireIndex(root) {
+  root.querySelectorAll(".idx-item").forEach(b =>
+    b.addEventListener("click", () => showEntry(b.dataset.id)));
+}
+
+// 홈 화면: 백과 항목 색인
 function showHome() {
-  entriesEl.innerHTML = "";
-  ENTRIES.forEach(e => entriesEl.appendChild(renderEntry(e)));
+  qEl.value = ""; $("#clear").hidden = true;
+  hintEl.hidden = true; resultsEl.innerHTML = "";
+  entriesEl.innerHTML = `<div class="index"><h2 class="browse-h">📚 백과 항목 <span>주제를 눌러 펼쳐 보기 · ${ENTRIES.length}개</span></h2>${entryIndexHtml()}</div>`;
+  wireIndex(entriesEl);
+  window.scrollTo(0, 0);
+}
+
+// 단일 항목 펼치기 (+ 목록으로 돌아가기)
+function showEntry(id) {
+  const e = entryById(id);
+  if (!e) return;
+  qEl.value = ""; $("#clear").hidden = true;
+  hintEl.hidden = true; resultsEl.innerHTML = ""; entriesEl.innerHTML = "";
+  const back = document.createElement("button");
+  back.className = "back-btn";
+  back.textContent = "← 백과 항목 목록";
+  back.addEventListener("click", showHome);
+  entriesEl.appendChild(back);
+  entriesEl.appendChild(renderEntry(e));
+  window.scrollTo(0, 0);
 }
 
 const bookById = (id) => BOOKS.find(b => b.id === id) || { title: id, searchable: false };
@@ -230,6 +288,9 @@ $("#clear").addEventListener("click", () => {
 function escapeHtml(s) {
   return String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 }
+
+// 제목 클릭 → 목록으로
+$("#home-link").addEventListener("click", showHome);
 
 // 사이드바 sticky 기준: 헤더 실제 높이를 CSS 변수로
 const setHeaderH = () => document.documentElement.style.setProperty("--header-h", document.querySelector("header").offsetHeight + "px");
