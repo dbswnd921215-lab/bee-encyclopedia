@@ -168,7 +168,7 @@ function renderBrowse() {
   browseEl.innerHTML = html;
   browseEl.querySelectorAll("button[data-book]").forEach(btn => {
     btn.addEventListener("click", () =>
-      openViewer(btn.dataset.book, [Number(btn.dataset.page)], 0));
+      openBook(btn.dataset.book, Number(btn.dataset.page)));
   });
 }
 
@@ -230,7 +230,7 @@ function renderEntry(e) {
   el.querySelectorAll(".src-btn").forEach(btn => {
     btn.addEventListener("click", () => {
       const pages = btn.dataset.pages.split(",").map(Number);
-      openViewer(btn.dataset.book, pages, 0);
+      openBook(btn.dataset.book, pages[0]);
     });
   });
   return el;
@@ -247,11 +247,19 @@ function renderResult(book, pageNo, text, pos, q) {
   const after = escapeHtml(text.slice(pos + q.length, end) + (end < text.length ? "…" : ""));
   el.innerHTML = `<div class="meta">${escapeHtml(book.title)} · ${pageNo}쪽</div>
     <div class="snippet">${before}<mark>${hit}</mark>${after}</div>`;
-  el.addEventListener("click", () => openViewer(book.id, [pageNo], 0));
+  el.addEventListener("click", () => openBook(book.id, pageNo));
   return el;
 }
 
 // ---- 원본 뷰어 ----
+// 책 전체를 넘겨 볼 수 있게, 시작 쪽만 지정해 연다
+function openBook(bookId, startPage) {
+  const b = bookById(bookId);
+  const total = b.pages || startPage;
+  const pages = Array.from({ length: total }, (_, i) => i + 1);
+  const idx = Math.min(Math.max(startPage - 1, 0), pages.length - 1);
+  openViewer(bookId, pages, idx);
+}
 function openViewer(bookId, pages, idx) {
   viewerState = { book: bookId, pages, idx };
   $("#viewer").hidden = false;
