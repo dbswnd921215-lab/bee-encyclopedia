@@ -224,14 +224,31 @@ function renderEntry(e) {
   }
 
   if (e.sources && e.sources.length) {
+    // 원본 교재 페이지 썸네일 (그림·도표 포함) — 눌러서 크게 보기
+    const thumbs = [];
+    e.sources.forEach(s => s.pages.forEach(p => thumbs.push([s.book, p])));
+    const shown = thumbs.slice(0, 10);
+    if (shown.length) {
+      html += `<h3>📷 원본 자료 <span class="h3-note">교재 원본 페이지 · 눌러서 크게 보기</span></h3><div class="thumbs">`;
+      shown.forEach(([book, p]) => {
+        html += `<button class="thumb" data-book="${book}" data-page="${p}">` +
+          `<img loading="lazy" src="pages/${encodeURIComponent(book)}/${p}.webp" alt="${p}쪽">` +
+          `<span>${p}쪽</span></button>`;
+      });
+      if (thumbs.length > shown.length) html += `<div class="thumb-more">+${thumbs.length - shown.length}쪽<br>출처 참고</div>`;
+      html += `</div>`;
+    }
+
     html += `<div class="sources"><span class="lbl">출처 원본 보기:</span>`;
     e.sources.forEach(s => {
-      const first = s.pages[0];
       html += `<button class="src-btn" data-book="${s.book}" data-pages="${s.pages.join(',')}">${escapeHtml(s.title)} p.${s.pages[0]}${s.pages.length > 1 ? '~' : ''}</button>`;
     });
     html += `</div>`;
   }
   el.innerHTML = html;
+  el.querySelectorAll(".thumb").forEach(btn => {
+    btn.addEventListener("click", () => openBook(btn.dataset.book, Number(btn.dataset.page)));
+  });
   el.querySelectorAll(".src-btn").forEach(btn => {
     btn.addEventListener("click", () => {
       const pages = btn.dataset.pages.split(",").map(Number);

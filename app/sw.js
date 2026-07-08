@@ -1,5 +1,5 @@
 // 방문한 자원을 캐시 → 오프라인에서도 열람/검색 가능
-const CACHE = "bee-v5"; // 검색 결과 표시 개편
+const CACHE = "bee-v6"; // 항목에 원본 페이지 썸네일 추가
 self.addEventListener("install", () => self.skipWaiting());
 self.addEventListener("activate", (e) => {
   e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k !== CACHE).map(k => caches.delete(k)))));
