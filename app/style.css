@@ -86,6 +86,33 @@ td:first-child { white-space: nowrap; font-weight: 600; color: var(--honey-dark)
   padding: 8px 10px; border-radius: 8px; margin: 8px 0;
 }
 
+/* 전체 목차 브라우즈 */
+.browse-h { font-size: 16px; margin: 16px 2px 6px; }
+.browse-h span { display: block; font-size: 12px; font-weight: 400; color: var(--muted); margin-top: 2px; }
+.book {
+  background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+  margin: 10px 0; overflow: hidden;
+}
+.book > summary {
+  padding: 13px 14px; font-weight: 700; font-size: 15px; cursor: pointer;
+  list-style: none; display: flex; align-items: center; gap: 8px;
+}
+.book > summary::-webkit-details-marker { display: none; }
+.book > summary::before { content: "▸"; color: var(--honey); font-size: 12px; }
+.book[open] > summary::before { content: "▾"; }
+.book .scan { font-size: 11px; font-weight: 600; color: var(--muted); background: #fbf7ee; padding: 1px 7px; border-radius: 999px; font-style: normal; }
+.book ul { list-style: none; margin: 0; padding: 0 0 8px; }
+.book li button {
+  width: 100%; text-align: left; background: none; border: none; cursor: pointer;
+  color: var(--ink); font-size: 14px; padding: 8px 14px; border-top: 1px solid var(--line);
+  display: flex; justify-content: space-between; gap: 10px; align-items: baseline;
+}
+.book li button:active { background: #fbf3e0; }
+.book li button span { font-size: 12px; color: var(--muted); white-space: nowrap; }
+.book li.lv1 button { font-weight: 600; }
+.book li.lv2 button { padding-left: 28px; }
+.book li.lv3 button { padding-left: 42px; color: var(--muted); }
+
 /* 원본 뷰어 */
 .viewer {
   position: fixed; inset: 0; z-index: 50; background: #1c1a16;
@@ -114,6 +141,7 @@ td:first-child { white-space: nowrap; font-weight: 600; color: var(--honey-dark)
 @media (prefers-color-scheme: dark) {
   :root { --bg:#191712; --card:#242017; --ink:#f0e9db; --muted:#a89e8c; --line:#3a3427; }
   th { background:#332c1c; }
-  .steps li, .scan-note { background:#2b261b; }
+  .steps li, .scan-note, .book .scan { background:#2b261b; }
   .src-btn { background:#242017; }
+  .book li button:active, .src-btn:active, .result:active { background:#332c1c; }
 }

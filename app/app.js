@@ -3,18 +3,22 @@
 // ---- 상태 ----
 let BOOKS = [];        // books.json
 let ENTRIES = [];      // entries.json
+let TOC = [];          // toc.json (책별 목차)
 const TEXT = {};       // book_id -> [page strings], 지연 로딩
 let viewerState = null; // { book, pages:[...], idx }
 
 const $ = (s) => document.querySelector(s);
-const qEl = $("#q"), resultsEl = $("#results"), entriesEl = $("#entries"), hintEl = $("#hint");
+const qEl = $("#q"), resultsEl = $("#results"), entriesEl = $("#entries"),
+      hintEl = $("#hint"), browseEl = $("#browse");
 
 // ---- 초기 로딩 ----
 Promise.all([
   fetch("data/books.json").then(r => r.json()),
   fetch("entries.json").then(r => r.json()),
-]).then(([books, entries]) => {
-  BOOKS = books; ENTRIES = entries;
+  fetch("data/toc.json").then(r => r.json()),
+]).then(([books, entries, toc]) => {
+  BOOKS = books; ENTRIES = entries; TOC = toc;
+  renderBrowse();
 }).catch(() => { hintEl.textContent = "데이터를 불러오지 못했습니다."; });
 
 const bookById = (id) => BOOKS.find(b => b.id === id) || { title: id, searchable: false };
@@ -33,8 +37,8 @@ async function search(query) {
   const q = query.trim();
   entriesEl.innerHTML = "";
   resultsEl.innerHTML = "";
-  if (!q) { hintEl.hidden = false; return; }
-  hintEl.hidden = true;
+  if (!q) { hintEl.hidden = false; browseEl.hidden = false; return; }
+  hintEl.hidden = true; browseEl.hidden = true;
   const token = ++searchToken;
 
   // 1) 백과 항목 매칭 (제목/태그/요약)
@@ -80,6 +84,27 @@ async function search(query) {
     note.textContent = `※ 스캔 문서 ${scan.length}권(${scan.map(b => b.title).join(", ")})은 본문 검색이 아직 안 됩니다. 원본 보기는 가능합니다.`;
     resultsEl.appendChild(note);
   }
+}
+
+// ---- 렌더: 전체 목차 브라우즈 ----
+function renderBrowse() {
+  if (!TOC.length) return;
+  const total = TOC.reduce((n, b) => n + b.sections.length, 0);
+  let html = `<h2 class="browse-h">📖 전체 목차 <span>주제를 눌러 원본 페이지로 이동 · 항목 ${total}개</span></h2>`;
+  TOC.forEach((b, bi) => {
+    html += `<details class="book"${bi === 0 ? " open" : ""}><summary>${escapeHtml(b.title)}` +
+      `${b.searchable ? "" : ' <em class="scan">스캔본</em>'}</summary><ul>`;
+    b.sections.forEach(s => {
+      html += `<li class="lv${Math.min(s.level, 3)}"><button data-book="${b.id}" data-page="${s.page}">` +
+        `${escapeHtml(s.title)}<span>${s.page}쪽</span></button></li>`;
+    });
+    html += `</ul></details>`;
+  });
+  browseEl.innerHTML = html;
+  browseEl.querySelectorAll("button[data-book]").forEach(btn => {
+    btn.addEventListener("click", () =>
+      openViewer(btn.dataset.book, [Number(btn.dataset.page)], 0));
+  });
 }
 
 // ---- 렌더: 백과 항목 ----
