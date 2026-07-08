@@ -3,8 +3,8 @@
   "short_name": "양봉백과",
   "start_url": ".",
   "display": "standalone",
-  "background_color": "#fffdf7",
-  "theme_color": "#e8a317",
+  "background_color": "#fafafa",
+  "theme_color": "#fa5d00",
   "icons": [
     { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
   ]

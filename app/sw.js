@@ -1,5 +1,5 @@
 // 방문한 자원을 캐시 → 오프라인에서도 열람/검색 가능
-const CACHE = "bee-v1";
+const CACHE = "bee-v2"; // CSS/JS 개편 반영 (캐시 갱신)
 self.addEventListener("install", () => self.skipWaiting());
 self.addEventListener("activate", (e) => {
   e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k !== CACHE).map(k => caches.delete(k)))));

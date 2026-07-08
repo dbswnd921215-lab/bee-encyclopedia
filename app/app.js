@@ -19,7 +19,14 @@ Promise.all([
 ]).then(([books, entries, toc]) => {
   BOOKS = books; ENTRIES = entries; TOC = toc;
   renderBrowse();
+  showHome();
 }).catch(() => { hintEl.textContent = "데이터를 불러오지 못했습니다."; });
+
+// 홈 화면: 백과 항목 전체 표시
+function showHome() {
+  entriesEl.innerHTML = "";
+  ENTRIES.forEach(e => entriesEl.appendChild(renderEntry(e)));
+}
 
 const bookById = (id) => BOOKS.find(b => b.id === id) || { title: id, searchable: false };
 
@@ -37,8 +44,8 @@ async function search(query) {
   const q = query.trim();
   entriesEl.innerHTML = "";
   resultsEl.innerHTML = "";
-  if (!q) { hintEl.hidden = false; browseEl.hidden = false; return; }
-  hintEl.hidden = true; browseEl.hidden = true;
+  if (!q) { hintEl.hidden = false; showHome(); return; }
+  hintEl.hidden = true;
   const token = ++searchToken;
 
   // 1) 백과 항목 매칭 (제목/태그/요약)
@@ -202,6 +209,11 @@ $("#clear").addEventListener("click", () => {
 function escapeHtml(s) {
   return String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 }
+
+// 사이드바 sticky 기준: 헤더 실제 높이를 CSS 변수로
+const setHeaderH = () => document.documentElement.style.setProperty("--header-h", document.querySelector("header").offsetHeight + "px");
+setHeaderH();
+addEventListener("resize", setHeaderH);
 
 if ("serviceWorker" in navigator) {
   navigator.serviceWorker.register("sw.js").catch(() => {});
