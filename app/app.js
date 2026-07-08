@@ -122,6 +122,13 @@ function renderEntry(e) {
     <h2>${escapeHtml(e.title)}</h2>
     <p class="summary">${escapeHtml(e.summary)}</p>`;
 
+  // 핵심 포인트·수치 (선택)
+  if (e.facts) {
+    html += `<h3>${escapeHtml(e.facts.title)}</h3><ul class="facts">`;
+    e.facts.items.forEach(t => { html += `<li>${escapeHtml(t)}</li>`; });
+    html += `</ul>`;
+  }
+
   if (e.calendar) {
     html += `<h3>${escapeHtml(e.calendar.title)}</h3><table><thead><tr><th>시기</th><th>할 일</th></tr></thead><tbody>`;
     e.calendar.rows.forEach(r => {
@@ -129,6 +136,20 @@ function renderEntry(e) {
     });
     html += `</tbody></table>`;
     if (e.calendar.note) html += `<p class="tbl-note">${escapeHtml(e.calendar.note)}</p>`;
+  }
+
+  // 비교표 (선택, 다중 열): { title, cols:[], rows:[[]], note }
+  if (e.tables) {
+    e.tables.forEach(t => {
+      html += `<h3>${escapeHtml(t.title)}</h3><div class="tbl-scroll"><table><thead><tr>`;
+      t.cols.forEach(c => { html += `<th>${escapeHtml(c)}</th>`; });
+      html += `</tr></thead><tbody>`;
+      t.rows.forEach(row => {
+        html += `<tr>` + row.map(cell => `<td>${escapeHtml(cell)}</td>`).join("") + `</tr>`;
+      });
+      html += `</tbody></table></div>`;
+      if (t.note) html += `<p class="tbl-note">${escapeHtml(t.note)}</p>`;
+    });
   }
 
   if (e.steps) {
